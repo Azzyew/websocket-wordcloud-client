@@ -1,9 +1,10 @@
 import { useEffect, useState } from "react";
+import ReactWordcloud from "react-wordcloud";
 import { socket } from "../../services/socket";
 
 export const Home = () => {
   const [text, setText] = useState("");
-  const [words, setWords] = useState<string[]>([]);
+  const [words, setWords] = useState<any[]>([]);
 
   const isValidText = text.length > 0 && text.length < 30;
 
@@ -38,9 +39,22 @@ export const Home = () => {
         <button type="button" onClick={() => sendMessage()}>
           Send
         </button>
-        {words.map((w) => (
-          <p>{w}</p>
-        ))}
+        <div style={{ height: 400, width: 600 }}>
+          <ReactWordcloud
+            words={words}
+            options={{
+              rotations: 0,
+              fontSizes: [15, 50],
+              fontWeight: "bold",
+              fontFamily: "Nunito",
+              deterministic: true,
+              randomSeed: "websocket",
+              scale: "linear",
+              enableTooltip: false,
+            }}
+            maxWords={100}
+          />
+        </div>
       </div>
     </>
   );
