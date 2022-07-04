@@ -5,30 +5,51 @@ import { Input, Button, Box, Center, Heading } from "@chakra-ui/react";
 
 import { socket } from "../../services/socket";
 
+interface Words {
+  text: string;
+  value: number;
+}
+
 export const Home = () => {
   const [text, setText] = useState("");
-  const [words, setWords] = useState<any[]>([]);
+  const [messages, setMessages] = useState<string[]>([]);
+  const [words, setWords] = useState<Words[]>([]);
+
+  const isValidText = text.length > 0 && text.length < 30;
 
   useEffect(() => {
-    const receivedMessage = (message: string) => {
-      const newWord = message;
+    const receivedMessage = (message: Words) => {
+      const newWord = message.text;
 
-      setWords([...words, newWord]);
+      setMessages([...messages, newWord]);
+
+      const totalOccurrencies = [...messages, newWord].reduce((prev, curr) => {
+        if (prev[curr]) {
+          prev[curr]++;
+        } else {
+          prev[curr] = 1;
+        }
+        return prev;
+      }, {} as Record<string, number>);
+
+      const formattedWords = Object.entries<number>(totalOccurrencies).map(
+        (item) => {
+          return {
+            text: item[0],
+            value: item[1],
+          };
+        }
+      );
+
+      setWords(formattedWords);
     };
 
     socket.on("message", (message) => {
       receivedMessage(message);
     });
-  }, [words, text]);
+  }, [messages, words, text]);
 
-  const valueArr = words.map((w) => {
-    return w.text;
-  });
-  const isDuplicate = valueArr.some((w, idx) => {
-    return valueArr.indexOf(w) !== idx;
-  });
-
-  const isValidText = text.length > 0 && text.length < 30 && !isDuplicate;
+  console.log(words);
 
   const sendMessage = () => {
     if (isValidText) {
